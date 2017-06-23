@@ -336,9 +336,17 @@
     
     if (self.delegate && [self.delegate respondsToSelector:@selector(didSeletedTextType:seletedContent:)]) {
         [self.delegate didSeletedTextType:seletedType seletedContent:seletedString];
+        self.seletedRange = NSMakeRange(0, 0);
     }
 }
-
+- (void)touchesCancelled:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
+    [self seleteStateSeting:NO];
+    
+    if (self.delegate && [self.delegate respondsToSelector:@selector(didSeletedTextType:seletedContent:)]) {
+        [self.delegate didSeletedTextType:seletedType seletedContent:seletedString];
+        self.seletedRange = NSMakeRange(0, 0);
+    }
+}
 /** 选中之后状态设置 */
 - (void)seleteStateSeting:(BOOL)seleted{
     _isSeleted = seleted;
