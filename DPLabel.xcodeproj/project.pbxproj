@@ -13,6 +13,8 @@
 		2344BAB01EFB8C1200BD2D34 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2344BAAE1EFB8C1200BD2D34 /* Main.storyboard */; };
 		2344BAB21EFB8C1200BD2D34 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2344BAB11EFB8C1200BD2D34 /* Assets.xcassets */; };
 		2344BAB51EFB8C1200BD2D34 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2344BAB31EFB8C1200BD2D34 /* LaunchScreen.storyboard */; };
+		2344BABE1EFB8C2500BD2D34 /* DPLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2344BABD1EFB8C2500BD2D34 /* DPLabel.m */; };
+		2344BAC01EFB8C6600BD2D34 /* Emotion.plist in Resources */ = {isa = PBXBuildFile; fileRef = 2344BABF1EFB8C6600BD2D34 /* Emotion.plist */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -26,6 +28,9 @@
 		2344BAB11EFB8C1200BD2D34 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		2344BAB41EFB8C1200BD2D34 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		2344BAB61EFB8C1200BD2D34 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		2344BABC1EFB8C2500BD2D34 /* DPLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DPLabel.h; sourceTree = "<group>"; };
+		2344BABD1EFB8C2500BD2D34 /* DPLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DPLabel.m; sourceTree = "<group>"; };
+		2344BABF1EFB8C6600BD2D34 /* Emotion.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Emotion.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -62,7 +67,10 @@
 				2344BAA91EFB8C1200BD2D34 /* AppDelegate.m */,
 				2344BAAB1EFB8C1200BD2D34 /* ViewController.h */,
 				2344BAAC1EFB8C1200BD2D34 /* ViewController.m */,
+				2344BABC1EFB8C2500BD2D34 /* DPLabel.h */,
+				2344BABD1EFB8C2500BD2D34 /* DPLabel.m */,
 				2344BAAE1EFB8C1200BD2D34 /* Main.storyboard */,
+				2344BABF1EFB8C6600BD2D34 /* Emotion.plist */,
 				2344BAB11EFB8C1200BD2D34 /* Assets.xcassets */,
 				2344BAB31EFB8C1200BD2D34 /* LaunchScreen.storyboard */,
 				2344BAB61EFB8C1200BD2D34 /* Info.plist */,
@@ -140,6 +148,7 @@
 			files = (
 				2344BAB51EFB8C1200BD2D34 /* LaunchScreen.storyboard in Resources */,
 				2344BAB21EFB8C1200BD2D34 /* Assets.xcassets in Resources */,
+				2344BAC01EFB8C6600BD2D34 /* Emotion.plist in Resources */,
 				2344BAB01EFB8C1200BD2D34 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -151,6 +160,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2344BABE1EFB8C2500BD2D34 /* DPLabel.m in Sources */,
 				2344BAAD1EFB8C1200BD2D34 /* ViewController.m in Sources */,
 				2344BAAA1EFB8C1200BD2D34 /* AppDelegate.m in Sources */,
 				2344BAA71EFB8C1200BD2D34 /* main.m in Sources */,
