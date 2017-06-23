@@ -26,7 +26,7 @@
     
     
     
-    NSString* testString = @"[微笑][微笑][微笑][微笑]，#点击活动#，@艾特人 www.aidu.com[微笑][微笑][微笑][微笑]，#点击活动#，@艾特人 www.baidu.com end";
+    NSString* testString = @"#测试测试测试测试测试测试测试测试测试测试测试测试测试#";
     
     CGFloat height = [DPLabel getContentHeightFromWidth:300 text:testString fontSize:15];
     NSLog(@"计算高度：%f", height);

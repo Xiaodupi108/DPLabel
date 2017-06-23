@@ -265,11 +265,10 @@
         type = [[NSMutableParagraphStyle alloc]init];
     }
     type = [[NSMutableParagraphStyle alloc]init];
-    type.lineBreakMode = NSLineBreakByWordWrapping;
+    type.lineBreakMode = NSLineBreakByCharWrapping;
     type.lineHeightMultiple = 1.1;
     type.alignment = NSTextAlignmentLeft;
     attDic[NSParagraphStyleAttributeName] = type;
-    attDic[NSKernAttributeName] = @(-self.textFont*0.25);
     
     [attributeStr setAttributes:attDic range:range];
     NSInteger font = _textFont == 0 ? 17 : _textFont;
@@ -388,7 +387,6 @@
 + (CGFloat)getContentHeightFromWidth:(CGFloat)width text:(NSString *)text fontSize:(CGFloat)fontSize {
     DPLabel* label = [[DPLabel alloc]initWithFrame:CGRectMake(0, 0, width, 0)];
     label.text = text;
-    [label sizeToFit];
     [label setNeedsDisplay];
     NSMutableAttributedString* attributeStr = [[label emotionStringWithString:text] mutableCopy];
     label.textContainer.size = label.frame.size;
