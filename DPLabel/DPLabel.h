@@ -33,6 +33,10 @@ typedef enum{
 @property (nonatomic, assign) BOOL isEnableTouchTypeThree;
 /** 选中的颜色 默认灰色*/
 @property (nonatomic, strong) UIColor *seletedColor;
+/**
+ 普通文字颜色
+ */
+@property (nonatomic, strong) UIColor *normalTextColor;
 /** 特殊字体颜色 默认蓝色*/
 @property (nonatomic, strong) UIColor *specialColorTypeOne;
 @property (nonatomic, strong) UIColor *specialColorTypeTwo;

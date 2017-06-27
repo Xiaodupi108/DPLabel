@@ -269,6 +269,7 @@
     type.lineHeightMultiple = 1.1;
     type.alignment = NSTextAlignmentLeft;
     attDic[NSParagraphStyleAttributeName] = type;
+    attDic[NSForegroundColorAttributeName] = self.normalTextColor;
     
     [attributeStr setAttributes:attDic range:range];
     NSInteger font = _textFont == 0 ? 17 : _textFont;
