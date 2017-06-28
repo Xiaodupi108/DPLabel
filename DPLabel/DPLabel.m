@@ -11,17 +11,19 @@
 @interface DPLabel ()<NSLayoutManagerDelegate>
 {
     NSInteger length;
-    /** 链接范围数组 */
+    //链接范围数组
     NSMutableArray *linkRangeArr;
-    /** @范围数组 */
+    //@范围数组
     NSMutableArray *userRangeArr;
-    /** ##范围数组 */
+    //##范围数组
     NSMutableArray *topRangeArr;
-    /** 表情范围数据 */
+    //表情范围数据
     NSMutableArray *emotionArr;
-    /** 选中的标签类型 */
+    //普通文字
+    NSMutableArray *normalArr;
+    //选中的标签类型
     DPSeletedTextType seletedType;
-    /** 获取选中的字符串 */
+    //获取选中的字符串
     NSString *seletedString;
 }
 @property (nonatomic, strong) NSArray<NSString*>* emotionConfigPlist;
@@ -43,6 +45,10 @@
 /** 选中的状态 */
 @property (nonatomic, assign) BOOL isSeleted;
 
+@property (nonatomic, assign) CGFloat backgroundAlpha;
+
+@property (nonatomic, strong) NSTimer* timer;
+
 @end
 
 @implementation DPLabel
@@ -54,15 +60,17 @@
      * 第二个参数:指定从什么地方开始绘制
      */
     if (_seletedRange.length != 0) {
-        
-        UIColor *seletedColor = _isSeleted ? [_seletedColor colorWithAlphaComponent:0.5] : [UIColor clearColor];
+        if (_seletedRange.length > _textStorage.length) {
+            return;
+        }
+        UIColor *seletedColor = [_selectedColor colorWithAlphaComponent:self.backgroundAlpha];
         [_textStorage addAttributes:@{NSBackgroundColorAttributeName : seletedColor} range:_seletedRange];
         [_layoutManager drawBackgroundForGlyphRange:_seletedRange atPoint:CGPointMake(0, 0)];
         
     }
     NSRange range = NSMakeRange(0, _textStorage.length);
     [_layoutManager drawGlyphsForGlyphRange:range atPoint:CGPointZero];
-//    NSLog(@"画布宽度：%f 高度：%f",_textContainer.size.width, _textContainer.size.height);
+    //    NSLog(@"画布宽度：%f 高度：%f",_textContainer.size.width, _textContainer.size.height);
 }
 - (void)layoutSubviews{
     [super layoutSubviews];
@@ -99,12 +107,15 @@
     self.baselineAdjustment = UIBaselineAdjustmentNone;
     /** 默认属性设置 */
     self.textFont = 0;
+    _textLineBreakMode = NSLineBreakByCharWrapping;
     //特殊字体颜色
     _specialColorTypeOne = defaultColor(255, 0, 0);
     _specialColorTypeTwo = defaultColor(0, 255, 0);
     _specialColorTypeThree = defaultColor(0, 0, 255);
+    _normalTextColor = [UIColor blackColor];
+    self.textColor = _normalTextColor;
     //选中蒙版颜色
-    _seletedColor = [[UIColor alloc]initWithWhite:0.7 alpha:0.2];
+    _selectedColor = [[UIColor alloc]initWithWhite:0.7 alpha:0.2];
     [self setUpSystem];
 }
 - (void)setUpSystem{
@@ -117,7 +128,7 @@
     
     //3、
     self.userInteractionEnabled = YES;
-    _textContainer.lineFragmentPadding = 8;
+    _textContainer.lineFragmentPadding = 0;
     _seletedRange = NSMakeRange(0, 0);
     length = 0;
     _isSeleted = NO;
@@ -129,24 +140,31 @@
     }
     return _textFont;
 }
+
+- (void)setNormalTextColor:(UIColor *)normalTextColor {
+    _normalTextColor = normalTextColor;
+    self.textColor = _normalTextColor;
+    [self setNeedsDisplay];
+}
+
 /** 重写父类的赋值方法 */
 - (void)setText:(NSString *)text{
     [super setText:text];
-//    [self sizeToFit];
-//    [self sizeThatFits:_textContainer.size];
+    //    [self sizeToFit];
+    //    [self sizeThatFits:_textContainer.size];
     length = text.length;
     [self prepatreText:[[NSAttributedString alloc]initWithString:text]];
 }
 - (void)setAttributedText:(NSAttributedString *)attributedText{
     [super setAttributedText:attributedText];
-//    [self sizeToFit];
-//    [self sizeThatFits:_textContainer.size];
+    //    [self sizeToFit];
+    //    [self sizeThatFits:_textContainer.size];
     length = attributedText.length;
     [self prepatreText:attributedText];
 }
 - (NSAttributedString*)emotionStringWithAttributedString:(NSAttributedString*)attString {
     NSMutableAttributedString* mutableAttrStr = [attString mutableCopy];
-    
+    emotionArr = [NSMutableArray array];
     //创建正则表达式的规则
     NSString *regexString = @"\\[(\\w+)\\]";
     //创建正则表达式对象
@@ -184,6 +202,11 @@
                             //用图片替换原来的文字
                             NSRange imageStrRang = NSMakeRange(range.location+offset, range.length);
                             [mutableAttrStr replaceCharactersInRange:imageStrRang withAttributedString:imageStr];
+                            TextRang* rang = [[TextRang alloc]init];
+                            rang.range = NSMakeRange(imageStrRang.location, imageStr.length);
+                            rang.text = imageStr.string;
+                            rang.type = AttrStringTypeEmotion;
+                            [emotionArr addObject:rang];
                             offset += imageStr.length-imageStrRang.length;
                         }
                         
@@ -209,12 +232,12 @@
     NSMutableAttributedString *attString = [[NSMutableAttributedString alloc]initWithString:string];
     
     return [self emotionStringWithAttributedString:attString];
-
+    
 }
 
 /**
  设置特殊文字的颜色
-
+ 
  @param specialColorTypeOne 颜色
  */
 - (void)setSpecialColorTypeOne:(UIColor *)specialColorTypeOne {
@@ -265,11 +288,11 @@
         type = [[NSMutableParagraphStyle alloc]init];
     }
     type = [[NSMutableParagraphStyle alloc]init];
-    type.lineBreakMode = NSLineBreakByCharWrapping;
+    type.lineBreakMode = self.textLineBreakMode;
     type.lineHeightMultiple = 1.1;
     type.alignment = NSTextAlignmentLeft;
     attDic[NSParagraphStyleAttributeName] = type;
-    attDic[NSForegroundColorAttributeName] = self.normalTextColor;
+    attDic[NSForegroundColorAttributeName] = _normalTextColor;
     
     [attributeStr setAttributes:attDic range:range];
     NSInteger font = _textFont == 0 ? 17 : _textFont;
@@ -296,11 +319,55 @@
     }
     //匹配@用户
     if (self.isEnableTouchTypeTwo) {
-        userRangeArr = [self getRangeArray:@"@[\\u4e00-\\u9fa5a-zA-Z0-9_-]*"];
+        userRangeArr = [self getRangeArray:@"@\\S+[^\\s*]\\S*\\s"];
         for (TextRang *rangeModel in userRangeArr) {
             [_textStorage addAttributes:@{NSForegroundColorAttributeName:_specialColorTypeTwo} range:rangeModel.range];
             rangeModel.type = AttrStringTypeAT;
         }
+    }
+    
+    NSMutableArray<TextRang*>* arr = [NSMutableArray array];
+    [arr addObjectsFromArray:linkRangeArr];
+    [arr addObjectsFromArray:topRangeArr];
+    [arr addObjectsFromArray:userRangeArr];
+    [arr addObjectsFromArray:emotionArr];
+    
+    [arr sortUsingComparator:^NSComparisonResult(TextRang* obj1, TextRang* obj2) {
+        if (obj1.range.location > obj2.range.location) {
+            return NSOrderedDescending;
+        }
+        return NSOrderedAscending;
+    }];
+    normalArr = [NSMutableArray array];
+    for (int i = 0; i < arr.count; i ++) {
+        TextRang* tr = arr[i];
+        int j = i + 1 >= arr.count ? i : i + 1;
+        TextRang* tr_next = arr[j];
+        if (i == 0 && tr.range.location != 0) {
+            TextRang* rang = [[TextRang alloc]init];
+            rang.range = NSMakeRange(0, tr.range.location);
+            rang.text = [attributeStr attributedSubstringFromRange:rang.range].string;
+            rang.type = AttrStringTypeNormal;
+            [normalArr addObject:rang];
+        }
+        else if (tr.range.location + tr.range.length < tr_next.range.location) {
+            TextRang* rang = [[TextRang alloc]init];
+            rang.range = NSMakeRange(tr.range.location + tr.range.length, tr_next.range.location - (tr.range.location + tr.range.length));
+            rang.text = [attributeStr attributedSubstringFromRange:rang.range].string;
+            rang.type = AttrStringTypeNormal;
+            [normalArr addObject:rang];
+        }
+        else if ( i == j && tr.range.location + tr.range.length < attributeStr.length) {
+            TextRang* rang = [[TextRang alloc]init];
+            rang.range = NSMakeRange(tr.range.location + tr.range.length, attributeStr.length - (tr.range.location + tr.range.length));
+            rang.text = [attributeStr attributedSubstringFromRange:rang.range].string;
+            rang.type = AttrStringTypeNormal;
+            [normalArr addObject:rang];
+        }
+    }
+    for (TextRang *rangeModel in normalArr) {
+        [_textStorage addAttributes:@{NSForegroundColorAttributeName:_normalTextColor} range:rangeModel.range];
+        rangeModel.type = AttrStringTypeNormal;
     }
     
     [self setNeedsDisplay];
@@ -323,89 +390,148 @@
     NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:pattern options:0 error:nil];
     return [self getRangeFormResult:regex];
 }
-- (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event{
-    UITouch* touch = [[event touchesForView:self] anyObject];
-    CGPoint rootViewLocation = [touch locationInView:self];
-    _seletedRange = [self getSeletedRang:rootViewLocation];
-    
-    seletedString = [_textStorage.string substringWithRange:_seletedRange];
-    [self seleteStateSeting:YES];
-//    NSLog(@"点击位置X：%f Y：%f",rootViewLocation.x, rootViewLocation.y);
-}
-- (void)touchesEnded:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event{
-    [self seleteStateSeting:NO];
-    
-    if (self.delegate && [self.delegate respondsToSelector:@selector(didSeletedTextType:seletedContent:)]) {
-        [self.delegate didSeletedTextType:seletedType seletedContent:seletedString];
-        self.seletedRange = NSMakeRange(0, 0);
-    }
-}
-- (void)touchesCancelled:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
-    [self seleteStateSeting:NO];
-    
-    if (self.delegate && [self.delegate respondsToSelector:@selector(didSeletedTextType:seletedContent:)]) {
-        [self.delegate didSeletedTextType:seletedType seletedContent:seletedString];
-        self.seletedRange = NSMakeRange(0, 0);
-    }
-}
+
 /** 选中之后状态设置 */
 - (void)seleteStateSeting:(BOOL)seleted{
     _isSeleted = seleted;
     //重绘布局：这个步骤很关键。否则无发显示选中效果
-    [self setNeedsDisplay];
+    self.backgroundAlpha = 1.0;
 }
-/** 获取选中的段落的范围 */
-- (NSRange)getSeletedRang:(CGPoint)seletedPoint{
-    if (_textStorage.length == 0) {
-        return NSMakeRange(0, 0);
+
+- (void)sendDelagate {
+    if (self.delegate && [self.delegate respondsToSelector:@selector(didSeletedTextType:seletedContent:)]) {
+        [self.delegate didSeletedTextType:seletedType seletedContent:seletedString];
+        
+    }
+    [self hideBackgroundSlowly];
+}
+
+- (void)hideBackgroundSlowly {
+    if (!self.timer) {
+        self.timer = [NSTimer scheduledTimerWithTimeInterval:0.01 target:self selector:@selector(changeAlpha) userInfo:nil repeats:YES];
+    }
+}
+
+- (void)changeAlpha {
+    self.backgroundAlpha -= 0.01;
+    [self setNeedsDisplay];
+    if (self.backgroundAlpha <= 0) {
+        [self.timer invalidate];
+        self.timer = nil;
+        [self seleteStateSeting:NO];
+        self.seletedRange = NSMakeRange(0, 0);
     }
     
+}
+
+///** 获取选中的段落的范围 */
+- (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event {
+    if (_textStorage.length == 0) {
+        return nil;
+    }
+    CGPoint seletedPoint = point;
     //1、获取选中点所在的下标值（index）
     NSInteger index = [_layoutManager glyphIndexForPoint:seletedPoint inTextContainer:_textContainer];
-    
+    //    NSLog(@"rect: clickPoint:%f %f",seletedPoint.x,seletedPoint.y);
     //2、判断链接是在哪个范围内
     //链接范围数组
     for (TextRang *rangModel in linkRangeArr) {
         NSRange rang = rangModel.range;
-        if (index > rang.location && index < rang.location + rang.length) {
+        CGRect rect = [_layoutManager boundingRectForGlyphRange:NSMakeRange(rang.location+rang.length-1, 1) inTextContainer:_textContainer];
+        CGFloat bottomY = rect.origin.y + rect.size.height;
+        CGFloat rightX = 0;
+        for (int i = 0; i < rang.length; i ++) {
+            CGRect rect = [_layoutManager boundingRectForGlyphRange:NSMakeRange(rang.location+i, 1) inTextContainer:_textContainer];
+            if (rect.origin.x + rect.size.width > rightX) {
+                rightX = rect.origin.x + rect.size.width;
+            }
+        }
+        //        NSLog(@"rect: linkBound : %f %f",rightX, bottomY);
+        //        NSLog(@"rect: linkRect : %f %f %f %f",rect.origin.x,rect.origin.y,rect.size.width,rect.size.height);
+        if (index > rang.location &&
+            index < rang.location + rang.length &&
+            seletedPoint.x < rightX &&
+            seletedPoint.y < bottomY) {
             seletedType = DPSeletedTextLink;
-            return  rang;
+            _seletedRange = rang;
+            seletedString = [_textStorage.string substringWithRange:_seletedRange];
+            [self seleteStateSeting:YES];
+            [self sendDelagate];
+            
+            return  self;
         }
     }
     //@范围数组
     for (TextRang *rangModel in userRangeArr) {
         NSRange rang = rangModel.range;
-        if (index > rang.location && index < rang.location + rang.length) {
+        CGRect rect = [_layoutManager boundingRectForGlyphRange:NSMakeRange(rang.location+rang.length-1, 1) inTextContainer:_textContainer];
+        CGFloat bottomY = rect.origin.y + rect.size.height;
+        CGFloat rightX = 0;
+        for (int i = 0; i < rang.length; i ++) {
+            CGRect rect = [_layoutManager boundingRectForGlyphRange:NSMakeRange(rang.location+i, 1) inTextContainer:_textContainer];
+            if (rect.origin.x + rect.size.width > rightX) {
+                rightX = rect.origin.x + rect.size.width;
+            }
+        }
+        //        NSLog(@"rect: atUserBound : %f %f",rightX, bottomY);
+        //        NSLog(@"rect: atUserRect : %f %f %f %f",rect.origin.x,rect.origin.y,rect.size.width,rect.size.height);
+        if (index > rang.location &&
+            index < rang.location + rang.length &&
+            seletedPoint.x < rightX &&
+            seletedPoint.y < bottomY) {
             seletedType = DPSeletedTextAt;
-            return  rang;
+            _seletedRange = rang;
+            seletedString = [_textStorage.string substringWithRange:_seletedRange];
+            [self seleteStateSeting:YES];
+            [self sendDelagate];
+            
+            return  self;
         }
     }
     //##范围数组
     for (TextRang *rangModel in topRangeArr) {
         NSRange rang = rangModel.range;
-        if (index > rang.location && index < rang.location + rang.length) {
+        CGRect rect = [_layoutManager boundingRectForGlyphRange:NSMakeRange(rang.location+rang.length-1, 1) inTextContainer:_textContainer];
+        CGFloat bottomY = rect.origin.y + rect.size.height;
+        CGFloat rightX = 0;
+        for (int i = 0; i < rang.length; i ++) {
+            CGRect rect = [_layoutManager boundingRectForGlyphRange:NSMakeRange(rang.location+i, 1) inTextContainer:_textContainer];
+            if (rect.origin.x + rect.size.width > rightX) {
+                rightX = rect.origin.x + rect.size.width;
+            }
+        }
+        //        NSLog(@"rect: #top#Bound : %f %f",rightX, bottomY);
+        //        NSLog(@"rect: #top#Rect : %f %f %f %f",rect.origin.x,rect.origin.y,rect.size.width,rect.size.height);
+        if (index > rang.location &&
+            index < rang.location + rang.length &&
+            seletedPoint.x < rightX &&
+            seletedPoint.y < bottomY) {
             seletedType = DPSeletedTextTopic;
-            return  rang;
+            _seletedRange = rang;
+            seletedString = [_textStorage.string substringWithRange:_seletedRange];
+            [self seleteStateSeting:YES];
+            [self sendDelagate];
+            
+            return  self;
         }
     }
     seletedType = DPSeletedTextNormal;
-    return NSMakeRange(0, 0);
-    
+    _seletedRange = NSMakeRange(0, 0);
+    return nil;
 }
 
 + (CGFloat)getContentHeightFromWidth:(CGFloat)width text:(NSString *)text fontSize:(CGFloat)fontSize {
     DPLabel* label = [[DPLabel alloc]initWithFrame:CGRectMake(0, 0, width, 0)];
+    label.isEnableTouchTypeOne = YES;
+    label.isEnableTouchTypeTwo = YES;
     label.text = text;
-    [label setNeedsDisplay];
+    //    [label setNeedsDisplay];
     NSMutableAttributedString* attributeStr = [[label emotionStringWithString:text] mutableCopy];
     label.textContainer.size = label.frame.size;
     CGSize boundingSize = [label.layoutManager boundingRectForGlyphRange:NSMakeRange(0, attributeStr.length) inTextContainer:label.textContainer].size;
-    
-//    NSLog(@"绘制高度：%f",boundingSize.height);
+    //    NSLog(@"绘制高度：%f",boundingSize.height);
     return boundingSize.height;
 }
-
-
 
 @end
 

@@ -31,8 +31,19 @@ typedef enum{
 @property (nonatomic, assign) BOOL isEnableTouchTypeOne;
 @property (nonatomic, assign) BOOL isEnableTouchTypeTwo;
 @property (nonatomic, assign) BOOL isEnableTouchTypeThree;
+
+/**
+ 换行模式
+ NSLineBreakByWordWrapping = 0,     	// Wrap at word boundaries
+ NSLineBreakByCharWrapping,		// Wrap at character boundaries, default
+ NSLineBreakByClipping,		// Simply clip
+ NSLineBreakByTruncatingHead,	// Truncate at head of line: "...wxyz"
+ NSLineBreakByTruncatingTail,	// Truncate at tail of line: "abcd..."
+ NSLineBreakByTruncatingMiddle	// Truncate middle of line:  "ab...yz"
+ */
+@property (nonatomic, assign) NSLineBreakMode textLineBreakMode;
 /** 选中的颜色 默认灰色*/
-@property (nonatomic, strong) UIColor *seletedColor;
+@property (nonatomic, strong) UIColor *selectedColor;
 /**
  普通文字颜色
  */
