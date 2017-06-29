@@ -26,12 +26,12 @@
     
     
     
-    NSString* testString = @"#测试测试测试测试测试测试测试测试测试测试测试测试测试#";
+    NSString* testString = @"#测试测试测试测试测试测试试测试测试测试试测试测试测试试测试测试测试试测试测试测试试测试测试测试试测试测试测试试测试测试[微笑][微笑][微笑]测试试测试测试测试试测试测试测试试测试测试测试试测试测试测试试测试测试测试试测试测试测试试测试测试测试试测试测试测试试测试测试测试试测试测试测试试测试测试测试试测试测试测试试测试测试测试试测试测试测试[微笑][微笑][微笑][微笑]试测试测试测试试测试测试测试测试试测试试测试试测试试测试试测试试测试试测试试测试试测试试测试试测试试测试试测试试测试试测试试测试试测试试测试试测试试测试试测试试测试试测试试[微笑][微笑][微笑][微笑][微笑][微笑][微笑][微笑]测试试测试试测试试测试试测试试测试试测试试测试试测试试测试试测试试测试试测试试测试测试测试测试测测试测试测试测测试测试测试测测试测试测试测测试测试测试测测试测试测试测测试测试测试测测试测试测试测测试测试测试测测试测试测试测测试测试测试测测试测试测试测测试测试测试测测试测试测试测试测试测试测试测试测试测[糗大了][糗大了][糗大了]";
     
-    CGFloat height = [DPLabel getContentHeightFromWidth:300 text:testString fontSize:15];
+    CGFloat height = [DPLabel getContentHeightFromWidth:355 text:testString fontSize:15];
     NSLog(@"计算高度：%f", height);
     
-    DPLabel* label = [[DPLabel alloc]initWithFrame:CGRectMake(10, 250, 300, height)];
+    DPLabel* label = [[DPLabel alloc]initWithFrame:CGRectMake(10, 20, 355, height)];
     self.label = label;
     label.isEnableTouchTypeOne = YES;
 //    label.isEnableTouchTypeTwo = YES;

@@ -70,6 +70,7 @@
     }
     NSRange range = NSMakeRange(0, _textStorage.length);
     [_layoutManager drawGlyphsForGlyphRange:range atPoint:CGPointZero];
+    
     //    NSLog(@"画布宽度：%f 高度：%f",_textContainer.size.width, _textContainer.size.height);
 }
 - (void)layoutSubviews{
@@ -289,7 +290,7 @@
     }
     type = [[NSMutableParagraphStyle alloc]init];
     type.lineBreakMode = self.textLineBreakMode;
-    type.lineHeightMultiple = 1.1;
+//    type.lineHeightMultiple = 1.1;
     type.alignment = NSTextAlignmentLeft;
     attDic[NSParagraphStyleAttributeName] = type;
     attDic[NSForegroundColorAttributeName] = _normalTextColor;
@@ -338,6 +339,7 @@
         }
         return NSOrderedAscending;
     }];
+    int judgeLast = NO;
     normalArr = [NSMutableArray array];
     for (int i = 0; i < arr.count; i ++) {
         TextRang* tr = arr[i];
@@ -363,14 +365,27 @@
             rang.text = [attributeStr attributedSubstringFromRange:rang.range].string;
             rang.type = AttrStringTypeNormal;
             [normalArr addObject:rang];
+            judgeLast = YES;
         }
     }
     for (TextRang *rangeModel in normalArr) {
         [_textStorage addAttributes:@{NSForegroundColorAttributeName:_normalTextColor} range:rangeModel.range];
         rangeModel.type = AttrStringTypeNormal;
     }
-    
     [self setNeedsDisplay];
+    if (judgeLast) {
+        TextRang* rangModel = normalArr.lastObject;
+        NSRange rang = rangModel.range;
+        CGRect rect = [_layoutManager boundingRectForGlyphRange:NSMakeRange(rang.location+rang.length-1, 1) inTextContainer:_textContainer];
+        CGFloat bottomY = rect.origin.y + rect.size.height;
+        NSLog(@"=====%f",bottomY);
+    } else {
+        TextRang* rangModel = arr.lastObject;
+        NSRange rang = rangModel.range;
+        CGRect rect = [_layoutManager boundingRectForGlyphRange:NSMakeRange(rang.location+rang.length-1, 1) inTextContainer:_textContainer];
+        CGFloat bottomY = rect.origin.y + rect.size.height;
+        NSLog(@"=====%f",bottomY);
+    }
     
 }
 /** 根据正则返回相应的特殊字符串范围数组 */
@@ -515,6 +530,34 @@
             return  self;
         }
     }
+    
+    for (TextRang *rangModel in normalArr) {
+        NSRange rang = rangModel.range;
+        CGRect rect = [_layoutManager boundingRectForGlyphRange:NSMakeRange(rang.location+rang.length-1, 1) inTextContainer:_textContainer];
+        CGFloat bottomY = rect.origin.y + rect.size.height;
+        CGFloat rightX = 0;
+        for (int i = 0; i < rang.length; i ++) {
+            CGRect rect = [_layoutManager boundingRectForGlyphRange:NSMakeRange(rang.location+i, 1) inTextContainer:_textContainer];
+            if (rect.origin.x + rect.size.width > rightX) {
+                rightX = rect.origin.x + rect.size.width;
+            }
+        }
+        //        NSLog(@"rect: #top#Bound : %f %f",rightX, bottomY);
+        //        NSLog(@"rect: #top#Rect : %f %f %f %f",rect.origin.x,rect.origin.y,rect.size.width,rect.size.height);
+        if (index > rang.location &&
+            index < rang.location + rang.length &&
+            seletedPoint.x < rightX &&
+            seletedPoint.y < bottomY) {
+            seletedType = DPSeletedTextNormal;
+            _seletedRange = rang;
+            seletedString = [_textStorage.string substringWithRange:_seletedRange];
+            [self seleteStateSeting:YES];
+            [self sendDelagate];
+            
+            return  self;
+        }
+    }
+    
     seletedType = DPSeletedTextNormal;
     _seletedRange = NSMakeRange(0, 0);
     return nil;
@@ -524,13 +567,23 @@
     DPLabel* label = [[DPLabel alloc]initWithFrame:CGRectMake(0, 0, width, 0)];
     label.isEnableTouchTypeOne = YES;
     label.isEnableTouchTypeTwo = YES;
+    label.textFont = fontSize;
     label.text = text;
-    //    [label setNeedsDisplay];
     NSMutableAttributedString* attributeStr = [[label emotionStringWithString:text] mutableCopy];
-    label.textContainer.size = label.frame.size;
-    CGSize boundingSize = [label.layoutManager boundingRectForGlyphRange:NSMakeRange(0, attributeStr.length) inTextContainer:label.textContainer].size;
-    //    NSLog(@"绘制高度：%f",boundingSize.height);
-    return boundingSize.height;
+    CGFloat height = 0, widthTmp = 0;
+    for (int i = 0; i < attributeStr.length; i ++) {
+        CGRect boundingSize = [label.layoutManager boundingRectForGlyphRange:NSMakeRange(i, 1) inTextContainer:label.textContainer];
+        widthTmp += boundingSize.size.width;
+        if (widthTmp > width) {
+            widthTmp = 0;
+            height += boundingSize.size.height;
+            i --;
+        }
+        if (i == attributeStr.length - 1) {
+            height += boundingSize.size.height;
+        }
+    }
+    return ceilf(height);
 }
 
 @end

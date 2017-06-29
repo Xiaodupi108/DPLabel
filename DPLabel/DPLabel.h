@@ -23,7 +23,9 @@ typedef enum{
 
 @interface DPLabel : UILabel
 @property (nonatomic, weak) id<DPLabelDelegate> delegate;
-/** label字体大小默认是17 */
+/**
+ 字体大小，默认17
+ */
 @property (nonatomic, assign) NSInteger textFont;
 /**
  TouchTypeOne: #活动内容#; TouchTypeTwo: @某人 ;TouchTypeThree: http:\\www.baidu.com
